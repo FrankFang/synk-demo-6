@@ -9,25 +9,25 @@ import (
 )
 
 func main() {
-
-	// 启动 gin 服务
-	go func() {
-		server.Run()
-	}()
-
-	// 启动 Chrome
-	// 先写死路径，后面再照着 lorca 改
-	chromePath := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-	cmd := exec.Command(chromePath, "--app=http://127.0.0.1:8080/static/index.html")
-	cmd.Start()
-
-	// 监听中断信号
-	chSignal := make(chan os.Signal, 1)
-	signal.Notify(chSignal, os.Interrupt)
-
-	// 等待中断信号
+	go server.Run()
+	cmd := startBrowser()
+	chSignal := listenToInterrupt()
 	select {
 	case <-chSignal:
 		cmd.Process.Kill()
 	}
+}
+
+func startBrowser() *exec.Cmd {
+	// 先写死路径，后面再照着 lorca 改
+	chromePath := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+	cmd := exec.Command(chromePath, "--app=http://127.0.0.1:8080/static/index.html")
+	cmd.Start()
+	return cmd
+}
+
+func listenToInterrupt() chan os.Signal {
+	chSignal := make(chan os.Signal, 1)
+	signal.Notify(chSignal, os.Interrupt)
+	return chSignal
 }
