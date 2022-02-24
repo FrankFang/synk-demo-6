@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/frankfang/synk/config"
 	c "github.com/frankfang/synk/server/controller"
+	"github.com/frankfang/synk/server/ws"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +17,9 @@ import (
 var FS embed.FS
 
 func Run() {
+	hub := ws.NewHub()
+	go hub.Run()
+
 	gin.SetMode(gin.DebugMode)
 	router := gin.Default()
 	staticFiles, _ := fs.Sub(FS, "frontend/dist")
@@ -23,6 +28,9 @@ func Run() {
 	router.GET("/uploads/:path", c.UploadsController)
 	router.GET("/api/v1/addresses", c.AddressesController)
 	router.POST("/api/v1/texts", c.TextsController)
+	router.GET("/ws", func(c *gin.Context) {
+		ws.HttpController(c, hub)
+	})
 	router.StaticFS("/static", http.FS(staticFiles))
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
@@ -41,5 +49,5 @@ func Run() {
 			c.Status(http.StatusNotFound)
 		}
 	})
-	router.Run(":8080")
+	router.Run(":" + config.GetPort())
 }

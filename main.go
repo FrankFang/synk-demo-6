@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"os/signal"
 
+	"github.com/frankfang/synk/config"
 	"github.com/frankfang/synk/server"
 )
 
@@ -21,7 +22,7 @@ func main() {
 func startBrowser() *exec.Cmd {
 	// 先写死路径，后面再照着 lorca 改
 	chromePath := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-	cmd := exec.Command(chromePath, "--app=http://127.0.0.1:8080/static/index.html")
+	cmd := exec.Command(chromePath, "--app=http://127.0.0.1:"+config.GetPort()+"/static/index.html")
 	cmd.Start()
 	return cmd
 }
